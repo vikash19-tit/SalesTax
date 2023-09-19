@@ -1,0 +1,93 @@
+package com.sales;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+class Item {
+private String name;
+private BigDecimal price;
+private boolean isExempt;
+private boolean isImported;
+
+public Item(String name, BigDecimal price, boolean isExempt, boolean isImported) {
+this.name = name;
+this.price = price;
+this.isExempt = isExempt;
+this.isImported = isImported;
+}
+
+public BigDecimal calculateTax() {
+BigDecimal tax = BigDecimal.ZERO;
+if (!isExempt) {
+tax = tax.add(price.multiply(BigDecimal.valueOf(0.10))); // Basic sales tax rate
+}
+if (isImported) {
+tax = tax.add(price.multiply(BigDecimal.valueOf(0.05))); // Imported sales tax rate
+}
+return roundToNearest0_05(tax);
+}
+
+private BigDecimal roundToNearest0_05(BigDecimal value) {
+BigDecimal rounded = value.setScale(2, RoundingMode.UP);
+BigDecimal remainder = rounded.remainder(BigDecimal.valueOf(0.05));
+if (remainder.compareTo(BigDecimal.ZERO) != 0) {
+rounded = rounded.add(BigDecimal.valueOf(0.05).subtract(remainder));
+}
+return rounded;
+}
+
+public BigDecimal getPriceWithTax() {
+return price.add(calculateTax());
+}
+
+public String toString() {
+return "1 " + name + ": " + getPriceWithTax().toString();
+}
+}
+
+public class Main {
+public static void main(String[] args) {
+// Input 1
+Item[] input1 = {
+new Item("book", new BigDecimal("12.49"), true, false),
+new Item("music CD", new BigDecimal("14.99"), false, false),
+new Item("chocolate bar", new BigDecimal("0.85"), true, false)
+};
+
+// Input 2
+Item[] input2 = {
+new Item("imported box of chocolates", new BigDecimal("10.00"), true, true),
+new Item("imported bottle of perfume", new BigDecimal("47.50"), false, true)
+};
+
+// Input 3
+Item[] input3 = {
+new Item("imported bottle of perfume", new BigDecimal("27.99"), false, true),
+new Item("bottle of perfume", new BigDecimal("18.99"), false, false),
+new Item("packet of headache pills", new BigDecimal("9.75"), true, false),
+new Item("box of imported chocolates", new BigDecimal("11.25"), true, true)
+};
+
+System.out.println("Output 1:");
+printReceipt(input1);
+
+System.out.println("\nOutput 2:");
+printReceipt(input2);
+
+System.out.println("\nOutput 3:");
+printReceipt(input3);
+}
+
+public static void printReceipt(Item[] items) {
+BigDecimal totalSalesTax = BigDecimal.ZERO;
+BigDecimal totalCost = BigDecimal.ZERO;
+
+for (Item item : items) {
+System.out.println(item.toString());
+totalSalesTax = totalSalesTax.add(item.calculateTax());
+totalCost = totalCost.add(item.getPriceWithTax());
+}
+
+System.out.println("Sales Taxes: " + totalSalesTax.toString());
+System.out.println("Total: " + totalCost.toString());
+}
+}
